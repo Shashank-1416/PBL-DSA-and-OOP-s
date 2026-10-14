@@ -24,6 +24,7 @@ void enqueue(Queue &q, int id, string name) {
     newApplicant->name = name;
     newApplicant->currentStage = "Applied";
     newApplicant->next = NULL;
+    newApplicant->historyHead = NULL;   
 
     if (q.rear == NULL) {
         q.front = newApplicant;
@@ -74,7 +75,7 @@ Applicant* removeById(Queue &q, int id) {
     return NULL;
 }
 
-// Print all applicants in a SPECIFIC queue
+
 void display(Queue &q) {
     Applicant* temp = q.front;
     if (temp == NULL) {
