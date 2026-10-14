@@ -3,80 +3,84 @@
 
 #include "applicant.h"
 
-Applicant* front =NULL;
-Applicant* rear =NULL;
+// making Queue structure ,for having multiple queue 
+struct Queue {
+    Applicant* front;
+    Applicant* rear;
+};
 
-void enqueue(int id , string name) {
-Applicant* newapplicant = new Applicant;
-newapplicant->id = id;
-newapplicant->name = name;
-newapplicant->currentStage = "Applied";
-newapplicant->next=NULL;
-
-if(rear==NULL){
-front=rear=newapplicant;
-}
-else{
-    rear->next= newapplicant;
-    rear = newapplicant;
-
-}
+// creating a new empty queue
+Queue createQueue() {
+    Queue q;
+    q.front = NULL;
+    q.rear = NULL;
+    return q;
 }
 
+// Adding new applicant to the back of a SPECIFIC queue
+void enqueue(Queue &q, int id, string name) {
+    Applicant* newApplicant = new Applicant;
+    newApplicant->id = id;
+    newApplicant->name = name;
+    newApplicant->currentStage = "Applied";
+    newApplicant->next = NULL;
 
-Applicant* dequeue(){
-    if (front==NULL){
-        cout<<"Queue is empty"<<endl;
+    if (q.rear == NULL) {
+        q.front = newApplicant;
+        q.rear = newApplicant;
+    } else {
+        q.rear->next = newApplicant;
+        q.rear = newApplicant;
+    }
+}
+
+// Remove and return the applicant from the front of a SPECIFIC queue
+Applicant* dequeue(Queue &q) {
+    if (q.front == NULL) {
+        cout << "Queue is empty!" << endl;
         return NULL;
     }
-
-Applicant*temp = front;
-front= front->next;
-if(front==NULL){
-    rear=NULL;
-}
-return temp;
-
-}
-
-Applicant* removeById(int id){
- Applicant* current = front;
-Applicant* previous = NULL;
-
-while (current != NULL) {
-    if(current->id==id){
-
-
-        if(previous==NULL){
-            front=current->next;
-        }
-        else{
-            previous->next=current->next;
-        }
-
-        if(current==rear){
-            rear=previous;
-        }
-        current->next = NULL;  
-        return current;
+    Applicant* temp = q.front;
+    q.front = q.front->next;
+    if (q.front == NULL) {
+        q.rear = NULL;
     }
-    previous=current ;
-    current=current->next;
+    return temp;
 }
 
-cout << "Applicant with ID " << id << " not found in queue." << endl;
+// Remove a SPECIFIC applicant by ID, from a SPECIFIC queue
+Applicant* removeById(Queue &q, int id) {
+    Applicant* current = q.front;
+    Applicant* previous = NULL;
+
+    while (current != NULL) {
+        if (current->id == id) {
+            if (previous == NULL) {
+                q.front = current->next;
+            } else {
+                previous->next = current->next;
+            }
+            if (current == q.rear) {
+                q.rear = previous;
+            }
+            current->next = NULL;
+            return current;
+        }
+        previous = current;
+        current = current->next;
+    }
+
+    cout << "Applicant with ID " << id << " not found in queue." << endl;
     return NULL;
 }
 
-
-
-void display() {
-    Applicant* temp = front;
+// Print all applicants in a SPECIFIC queue
+void display(Queue &q) {
+    Applicant* temp = q.front;
     if (temp == NULL) {
-        cout << "No applicants in queue." << endl;
+        cout << "Empty." << endl;
         return;
     }
-    cout << "Current Queue: ";
     while (temp != NULL) {
         cout << temp->name << "(" << temp->id << ") -> ";
         temp = temp->next;
