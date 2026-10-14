@@ -41,3 +41,20 @@ bool isStackEmpty() {
 }
 
 
+void displayActions() {
+    Action* temp = top;
+    if (temp == NULL) {
+        cout << "No actions recorded." << endl;
+        return;
+    }
+    cout << "Action Stack (top to bottom):" << endl;
+    int num = 1;
+    while (temp != NULL) {
+        cout << num << ". " << temp->applicantName << ": " 
+             << temp->sourceStage << " -> " << temp->destStage << endl;
+        temp = temp->next;
+        num++;
+    }
+}
+
+#endif
