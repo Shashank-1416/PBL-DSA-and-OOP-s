@@ -2,6 +2,8 @@
 #define COMPANY_H
 
 #include "queue.h"
+#include "stack.h"
+#include "history.h"
 
 struct Company {
     string name;
@@ -9,7 +11,6 @@ struct Company {
     Queue interview;
     Queue offer;
 };
-
 
 Company createCompany(string name) {
     Company c;
@@ -20,16 +21,16 @@ Company createCompany(string name) {
     return c;
 }
 
-// Adding applicant to screening
 void addApplicant(Company &c, int id, string name) {
     enqueue(c.screening, id, name);
     cout << name << " added to " << c.name << "'s Screening queue." << endl;
 }
 
-// Move an applicant forward: Screening -> Interview -> Offer
 void advanceApplicant(Company &c, int id) {
     Applicant* a = removeById(c.screening, id);
     if (a != NULL) {
+        addHistoryEvent(a->historyHead, "Interview");
+        push(id, a->name, "Screening", "Interview");
         a->currentStage = "Interview";
         enqueue(c.interview, id, a->name);
         cout << a->name << " moved to Interview." << endl;
@@ -39,6 +40,8 @@ void advanceApplicant(Company &c, int id) {
 
     a = removeById(c.interview, id);
     if (a != NULL) {
+        addHistoryEvent(a->historyHead, "Offer");
+        push(id, a->name, "Interview", "Offer");
         a->currentStage = "Offer";
         enqueue(c.offer, id, a->name);
         cout << a->name << " moved to Offer." << endl;
@@ -48,7 +51,6 @@ void advanceApplicant(Company &c, int id) {
 
     cout << "Applicant not found in Screening or Interview." << endl;
 }
-
 
 void displayCompany(Company &c) {
     cout << "\n--- " << c.name << " ---" << endl;
