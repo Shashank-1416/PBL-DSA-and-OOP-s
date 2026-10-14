@@ -1,34 +1,21 @@
 #include "queue.h"
 #include "stack.h"
+#include "history.h"
 
 int main() {
     enqueue(101, "Rahul");
     enqueue(102, "Priya");
-    enqueue(103, "Karan");
 
-    cout << "Initial Queue:" << endl;
-    display();
+    // Find Rahul's node (front of queue, since he was added first)
+    Applicant* rahul = front;
+    rahul->historyHead = NULL;   // start with empty history
 
-   
-    removeById(101);
-    push(101, "Rahul", "Screening", "Interview");
+    addHistoryEvent(rahul->historyHead, "Applied");
+    addHistoryEvent(rahul->historyHead, "Screening");
+    addHistoryEvent(rahul->historyHead, "Interview");
 
-    cout << "\nAfter advancing Rahul:" << endl;
-    display();
-    displayActions();
-
-    // Now undo it
-    cout << "\nUndoing last action..." << endl;
-    Action* lastAction = pop();
-    if (lastAction != NULL) {
-        cout << "Reversing: " << lastAction->applicantName 
-             << " back to " << lastAction->sourceStage << endl;
-        enqueue(lastAction->applicantId, lastAction->applicantName);
-    }
-
-    cout << "\nAfter undo:" << endl;
-    display();
-    displayActions();
+    cout << "Rahul's history:" << endl;
+    displayHistory(rahul->historyHead);
 
     return 0;
 }
