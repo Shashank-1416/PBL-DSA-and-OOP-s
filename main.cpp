@@ -4,15 +4,23 @@ int main() {
     Company tcs = createCompany("TCS");
 
     addApplicant(tcs, 101, "Rahul");
-    addApplicant(tcs, 102, "Priya");
+    advanceApplicant(tcs, 101);   // Screening -> Interview
 
     displayCompany(tcs);
+    displayActions();
 
-    advanceApplicant(tcs, 101);   // Rahul: Screening -> Interview
-
-    displayCompany(tcs);
-
-    advanceApplicant(tcs, 101);   // Rahul: Interview -> Offer
+    // Now undo it
+    cout << "\nUndoing last action..." << endl;
+    Action* last = pop();
+    if (last != NULL) {
+        Applicant* a = removeById(tcs.interview, last->applicantId);
+        if (a != NULL) {
+            a->currentStage = last->sourceStage;
+            enqueue(tcs.screening, a->id, a->name);
+            cout << a->name << " moved back to " << last->sourceStage << endl;
+            delete a;
+        }
+    }
 
     displayCompany(tcs);
 
