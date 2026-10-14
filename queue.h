@@ -3,11 +3,11 @@
 
 #include "applicant.h"
 
-applicant* front =NULL;
-applicant* rear =NULL;
+Applicant* front =NULL;
+Applicant* rear =NULL;
 
 void enqueue(int id , string name) {
-applicant* newapplicant = new applicant;
+Applicant* newapplicant = new Applicant;
 newapplicant->id = id;
 newapplicant->name = name;
 newapplicant->currentStage = "Applied";
@@ -24,13 +24,13 @@ else{
 }
 
 
-applicant* dequeue(){
+Applicant* dequeue(){
     if (front==NULL){
         cout<<"Queue is empty"<<endl;
         return NULL;
     }
 
-applicant*temp = front;
+Applicant*temp = front;
 front= front->next;
 if(front==NULL){
     rear=NULL;
@@ -39,9 +39,9 @@ return temp;
 
 }
 
-applicant* removeById(int id){
- applicant* current = front;
-applicant* previous = NULL;
+Applicant* removeById(int id){
+ Applicant* current = front;
+Applicant* previous = NULL;
 
 while (current != NULL) {
     if(current->id==id){
@@ -71,7 +71,7 @@ cout << "Applicant with ID " << id << " not found in queue." << endl;
 
 
 void display() {
-    applicant* temp = front;
+    Applicant* temp = front;
     if (temp == NULL) {
         cout << "No applicants in queue." << endl;
         return;
