@@ -1,21 +1,34 @@
-#include"queue.h"
+#include "queue.h"
+#include "stack.h"
 
-int main(){
+int main() {
+    enqueue(101, "Rahul");
+    enqueue(102, "Priya");
+    enqueue(103, "Karan");
 
-enqueue(101,"Rahul");
-enqueue(102,"Monu");
-enqueue(103,"Bonu");
-
-cout << "Before removal:" << endl;
+    cout << "Initial Queue:" << endl;
     display();
 
-applicant* removed = removeById(102);  
-    if (removed != NULL) {
-        cout << "Removed: " << removed->name << endl;
+   
+    removeById(101);
+    push(101, "Rahul", "Screening", "Interview");
+
+    cout << "\nAfter advancing Rahul:" << endl;
+    display();
+    displayActions();
+
+    // Now undo it
+    cout << "\nUndoing last action..." << endl;
+    Action* lastAction = pop();
+    if (lastAction != NULL) {
+        cout << "Reversing: " << lastAction->applicantName 
+             << " back to " << lastAction->sourceStage << endl;
+        enqueue(lastAction->applicantId, lastAction->applicantName);
     }
 
-    cout<<"After removal"<<endl;
+    cout << "\nAfter undo:" << endl;
     display();
+    displayActions();
 
     return 0;
 }
