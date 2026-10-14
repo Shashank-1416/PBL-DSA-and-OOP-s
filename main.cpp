@@ -1,21 +1,20 @@
-#include "queue.h"
-#include "stack.h"
-#include "history.h"
+#include "company.h"
 
 int main() {
-    enqueue(101, "Rahul");
-    enqueue(102, "Priya");
+    Company tcs = createCompany("TCS");
 
-    // Find Rahul's node (front of queue, since he was added first)
-    Applicant* rahul = front;
-    rahul->historyHead = NULL;   // start with empty history
+    addApplicant(tcs, 101, "Rahul");
+    addApplicant(tcs, 102, "Priya");
 
-    addHistoryEvent(rahul->historyHead, "Applied");
-    addHistoryEvent(rahul->historyHead, "Screening");
-    addHistoryEvent(rahul->historyHead, "Interview");
+    displayCompany(tcs);
 
-    cout << "Rahul's history:" << endl;
-    displayHistory(rahul->historyHead);
+    advanceApplicant(tcs, 101);   // Rahul: Screening -> Interview
+
+    displayCompany(tcs);
+
+    advanceApplicant(tcs, 101);   // Rahul: Interview -> Offer
+
+    displayCompany(tcs);
 
     return 0;
 }
