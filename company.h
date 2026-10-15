@@ -142,7 +142,14 @@ void reconsiderApplicant(Company &c, int id, string targetStage) {
     delete a;
 }
 
-
+void displayCompany(Company &c) {
+    cout << "\n--- " << c.name << " ---" << endl;
+    cout << "Screening: "; display(c.screening);
+    cout << "Interview: "; display(c.interview);
+    cout << "Offer: ";     display(c.offer);
+    cout << "Held: ";      display(c.held);
+    cout << "Rejected: ";  display(c.rejected);
+}
 
 
 #endif
