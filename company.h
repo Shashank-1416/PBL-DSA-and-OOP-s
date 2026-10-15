@@ -112,6 +112,37 @@ void rejectApplicant(Company &c, int id) {
     delete a;
 }
 
+// Reconsider a held/rejected applicant back into a specific stage
+
+void reconsiderApplicant(Company &c, int id, string targetStage) {
+    string sourceStage;
+    Applicant* a = findAndRemoveFromCurrentStage(c, id, sourceStage);
+
+    if (a == NULL) {
+        cout << "Applicant not found." << endl;
+        return;
+    }
+
+    addHistoryEvent(a->historyHead, targetStage);
+    push(id, a->name, sourceStage, targetStage);
+    a->currentStage = targetStage;
+
+    if (targetStage == "Screening") {
+        enqueue(c.screening, id, a->name);
+    } else if (targetStage == "Interview") {
+        enqueue(c.interview, id, a->name);
+    } else {
+        cout << "Invalid target stage." << endl;
+        delete a;
+        return;
+    }
+
+    cout << a->name << " reconsidered into " << targetStage 
+         << " (was in " << sourceStage << ")." << endl;
+    delete a;
+}
+
+
 void displayCompany(Company &c) {
     cout << "\n--- " << c.name << " ---" << endl;
     cout << "Screening: "; display(c.screening);
