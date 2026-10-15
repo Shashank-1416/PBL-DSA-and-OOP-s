@@ -4,12 +4,8 @@ int main() {
     Company tcs = createCompany("TCS");
 
     addApplicant(tcs, 101, "Rahul");
-    addApplicant(tcs, 102, "Priya");
-    addApplicant(tcs, 103, "Karan");
-
-    advanceApplicant(tcs, 101);   
-    holdApplicant(tcs, 102);      
-    rejectApplicant(tcs, 103);    
+    holdApplicant(tcs, 101);                         
+    reconsiderApplicant(tcs, 101, "Screening");        
 
     displayCompany(tcs);
 
