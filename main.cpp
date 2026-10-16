@@ -31,7 +31,7 @@ int main() {
 }
 
 else if (choice==2){
-    ind id;
+    int id;
     cout<< "Enter Applicant ID to adavce: ";
     cin>> id;
     advanceApplicant(tcs, id);
@@ -62,15 +62,13 @@ else if (choice==6){
     if(last!= NULL){
         string dummy;
         Applicant* a =findAndRemoveFromCurrentStage(tcs, last->applicantId, dummy);
-        
-    }
-
-
-}
-
-
- }
-
-
-    return 0;
-}
+        if (a != NULL) {
+                    a->currentStage = last->sourceStage;
+                    if (last->sourceStage == "Screening") enqueue(tcs.screening, a->id, a->name);
+                    else if (last->sourceStage == "Interview") enqueue(tcs.interview, a->id, a->name);
+                    else if (last->sourceStage == "Offer") enqueue(tcs.offer, a->id, a->name);
+                    else if (last->sourceStage == "Hold") enqueue(tcs.held, a->id, a->name);
+                    cout << a->name << " undone, moved back to " << last->sourceStage << endl;
+                    delete a;
+                }
+                
