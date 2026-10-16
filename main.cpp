@@ -25,12 +25,48 @@ int main() {
     if (choice == 1){
         int id;
         string name;
-        cout<<"Enter applicant ID:";
+        cout<<"Enter applicant ID: ";
         cin>> name;
         addApplicant(tcs, id, name);
 }
 
+else if (choice==2){
+    ind id;
+    cout<< "Enter Applicant ID to adavce: ";
+    cin>> id;
+    advanceApplicant(tcs, id);
+}
+else if(choice == 3){
+    int id;
+    cout<< "Enter applicant ID to hold: ";
+    cin>> id;
+    holdApplicant(tcs, id);
+}
+else if (choice==4){
+    int id;
+    cout<<"Enter applicant ID to reject: ";
+    cin>>id;
+    rejectApplicant(tcs, id);
+}
+else if(choice==5){
+    int id;
+    string stage;
+    cout<<"Enter applicant ID to reconsider: ";
+    cin>> id;
+    cout<<"Enter target stage (Screening/Interview): ";
+    cin >> stage;
+    reconsiderApplicant(tcs, id, stage);
+}
+else if (choice==6){
+    Action* last = pop();
+    if(last!= NULL){
+        string dummy;
+        Applicant* a =findAndRemoveFromCurrentStage(tcs, last->applicantId, dummy);
+        
+    }
 
+
+}
 
 
  }
