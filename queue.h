@@ -71,7 +71,7 @@ Applicant* removeById(Queue &q, int id) {
         current = current->next;
     }
 
-    cout << "Applicant with ID " << id << " not found in queue." << endl;
+    
     return NULL;
 }
 
