@@ -26,7 +26,10 @@ int main() {
         int id;
         string name;
         cout<<"Enter applicant ID: ";
-        cin>> name;
+        cin>>id;
+        cout << "Enter Name: ";
+            cin >> name;
+        
         addApplicant(tcs, id, name);
 }
 
