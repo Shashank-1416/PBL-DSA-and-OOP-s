@@ -1,6 +1,7 @@
 #ifndef COMPANY_H
 #define COMPANY_H
 
+#include <cctype>
 #include "queue.h"
 #include "stack.h"
 #include "history.h"
@@ -24,6 +25,15 @@ Company createCompany(string name) {
     c.rejected = createQueue();
     return c;
 }
+
+
+string toLower(string s) {
+    for (int i = 0; i < s.length(); i++) {
+        s[i] = tolower(s[i]);
+    }
+    return s;
+}
+
 
 void addApplicant(Company &c, int id, string name) {
     enqueue(c.screening, id, name);
@@ -123,13 +133,15 @@ void reconsiderApplicant(Company &c, int id, string targetStage) {
         return;
     }
 
+    string targetLower = toLower(targetStage);
+
     addHistoryEvent(a->historyHead, targetStage);
     push(id, a->name, sourceStage, targetStage);
     a->currentStage = targetStage;
 
-    if (targetStage == "Screening") {
+    if (targetLower == "screening") {
         enqueue(c.screening, id, a->name);
-    } else if (targetStage == "Interview") {
+    } else if (targetLower == "interview") {
         enqueue(c.interview, id, a->name);
     } else {
         cout << "Invalid target stage." << endl;
