@@ -14,18 +14,27 @@ cout << "\n===== TCS Recruitment Tracker =====" << endl;
     cout << "Enter choice: ";
 }
 
-
-
-
-
 int main() {
-    Company tcs = createCompany("TCS");
+ Company tcs = createCompany("TCS");
+ int choice;
 
-    addApplicant(tcs, 101, "Rahul");
-    holdApplicant(tcs, 101);                         
-    reconsiderApplicant(tcs, 101, "Screening");        
+ do{
+    showMenu();
+    cin>>choice;
 
-    displayCompany(tcs);
+    if (choice == 1){
+        int id;
+        string name;
+        cout<<"Enter applicant ID:";
+        cin>> name;
+        addApplicant(tcs, id, name);
+}
+
+
+
+
+ }
+
 
     return 0;
 }
