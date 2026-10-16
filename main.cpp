@@ -71,4 +71,21 @@ else if (choice==6){
                     cout << a->name << " undone, moved back to " << last->sourceStage << endl;
                     delete a;
                 }
-                
+                delete last;
+            }
+        }
+        else if (choice == 7) {
+            displayCompany(tcs);
+        }
+        else if (choice == 8) {
+            cout << "Exiting..." << endl;
+        }
+        else {
+            cout << "Invalid choice." << endl;
+        }
+
+    } while (choice != 8);
+
+    return 0;
+    }
+
