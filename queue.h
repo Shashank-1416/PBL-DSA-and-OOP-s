@@ -17,12 +17,27 @@ Queue createQueue() {
     return q;
 }
 
+// Adding existing Applicant node to the back of a SPECIFIC queue (keeps historyHead)
+void enqueueNode(Queue &q, Applicant* node, string stageName) {
+    if (node == NULL) return;
+    node->currentStage = stageName;
+    node->next = NULL;
+
+    if (q.rear == NULL) {
+        q.front = node;
+        q.rear = node;
+    } else {
+        q.rear->next = node;
+        q.rear = node;
+    }
+}
+
 // Adding new applicant to the back of a SPECIFIC queue
-void enqueue(Queue &q, int id, string name) {
+void enqueue(Queue &q, int id, string name, string stageName = "Applied") {
     Applicant* newApplicant = new Applicant;
     newApplicant->id = id;
     newApplicant->name = name;
-    newApplicant->currentStage = "Applied";
+    newApplicant->currentStage = stageName;
     newApplicant->next = NULL;
     newApplicant->historyHead = NULL;   
 
@@ -71,10 +86,19 @@ Applicant* removeById(Queue &q, int id) {
         current = current->next;
     }
 
-    
     return NULL;
 }
 
+Applicant* findById(Queue &q, int id) {
+    Applicant* current = q.front;
+    while (current != NULL) {
+        if (current->id == id) {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
 
 void display(Queue &q) {
     Applicant* temp = q.front;
