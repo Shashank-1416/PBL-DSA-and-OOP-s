@@ -3,13 +3,11 @@
 
 #include "applicant.h"
 
-// making Queue structure ,for having multiple queue 
 struct Queue {
     Applicant* front;
     Applicant* rear;
 };
 
-// creating a new empty queue
 Queue createQueue() {
     Queue q;
     q.front = NULL;
@@ -17,7 +15,7 @@ Queue createQueue() {
     return q;
 }
 
-// Adding existing Applicant node to the back of a SPECIFIC queue (keeps historyHead)
+// Moves an existing Applicant node without losing its historyHead
 void enqueueNode(Queue &q, Applicant* node, string stageName) {
     if (node == NULL) return;
     node->currentStage = stageName;
@@ -32,12 +30,11 @@ void enqueueNode(Queue &q, Applicant* node, string stageName) {
     }
 }
 
-// Adding new applicant to the back of a SPECIFIC queue
-void enqueue(Queue &q, int id, string name, string stageName = "Applied") {
+void enqueue(Queue &q, int id, string name) {
     Applicant* newApplicant = new Applicant;
     newApplicant->id = id;
     newApplicant->name = name;
-    newApplicant->currentStage = stageName;
+    newApplicant->currentStage = "Applied";
     newApplicant->next = NULL;
     newApplicant->historyHead = NULL;   
 
@@ -50,7 +47,6 @@ void enqueue(Queue &q, int id, string name, string stageName = "Applied") {
     }
 }
 
-// Remove and return the applicant from the front of a SPECIFIC queue
 Applicant* dequeue(Queue &q) {
     if (q.front == NULL) {
         cout << "Queue is empty!" << endl;
@@ -64,7 +60,6 @@ Applicant* dequeue(Queue &q) {
     return temp;
 }
 
-// Remove a SPECIFIC applicant by ID, from a SPECIFIC queue
 Applicant* removeById(Queue &q, int id) {
     Applicant* current = q.front;
     Applicant* previous = NULL;
@@ -86,17 +81,6 @@ Applicant* removeById(Queue &q, int id) {
         current = current->next;
     }
 
-    return NULL;
-}
-
-Applicant* findById(Queue &q, int id) {
-    Applicant* current = q.front;
-    while (current != NULL) {
-        if (current->id == id) {
-            return current;
-        }
-        current = current->next;
-    }
     return NULL;
 }
 
