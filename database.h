@@ -4,200 +4,134 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <string>
 #include "company.h"
 using namespace std;
 
-string escapeCSV(const string &s) {
-    string out = "\"";
-    for (int i = 0; i < (int)s.length(); i++) {
-        if (s[i] == '"') out += "\"\"";
-        else out += s[i];
-    }
-    out += "\"";
-    return out;
-}
-
-vector<string> parseCSVLine(const string &line) {
-    vector<string> fields;
-    string current = "";
-    bool inQuotes = false;
-
-    for (int i = 0; i < (int)line.length(); i++) {
-        char ch = line[i];
-        if (ch == '"') {
-            if (inQuotes && i + 1 < (int)line.length() && line[i + 1] == '"') {
-                current += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
-            }
-        } else if (ch == ',' && !inQuotes) {
-            fields.push_back(current);
-            current = "";
-        } else {
-            current += ch;
-        }
-    }
-    fields.push_back(current);
-    return fields;
-}
-
-string serializeHistory(HistoryNode* head) {
-    string out = "";
-    HistoryNode* temp = head;
-    while (temp != NULL) {
-        out += temp->event;
-        if (temp->next != NULL) out += "|";
-        temp = temp->next;
-    }
-    return out;
-}
-
-void writeQueueToCSV(ofstream &out, const string &companyName, Queue &q, const string &stageName) {
+void saveQueueCSV(ofstream &file, string companyName, Queue &q, string stage) {
     Applicant* temp = q.front;
     while (temp != NULL) {
-        out << escapeCSV(companyName) << ","
-            << temp->id << ","
-            << escapeCSV(temp->name) << ","
-            << escapeCSV(stageName) << ","
-            << escapeCSV(serializeHistory(temp->historyHead)) << "\n";
+        string hist = "";
+        HistoryNode* h = temp->historyHead;
+        while (h != NULL) {
+            hist += h->event;
+            if (h->next != NULL) hist += "|";
+            h = h->next;
+        }
+        file << companyName << "," << temp->id << "," << temp->name << "," << stage << "," << hist << "\n";
         temp = temp->next;
     }
 }
 
-void writeStackToCSV(ofstream &out, const string &companyName, Action* node) {
+void saveStackCSV(ofstream &file, string companyName, Action* node) {
     if (node == NULL) return;
-    writeStackToCSV(out, companyName, node->next);
-    out << escapeCSV(companyName) << ","
-        << node->applicantId << ","
-        << escapeCSV(node->applicantName) << ","
-        << escapeCSV(node->sourceStage) << ","
-        << escapeCSV(node->destStage) << "\n";
+    saveStackCSV(file, companyName, node->next);
+    file << companyName << "," << node->applicantId << "," << node->applicantName
+         << "," << node->sourceStage << "," << node->destStage << "\n";
 }
 
-void saveDatabaseCSV(vector<Company> &companies) {
-    ofstream compFile("companies.csv");
-    ofstream appFile("applicants.csv");
-    ofstream actFile("actions.csv");
-
-    if (!compFile.is_open() || !appFile.is_open() || !actFile.is_open()) {
-        cout << "Error opening CSV files for saving." << endl;
-        return;
-    }
-
-    compFile << "companyName\n";
-    appFile << "companyName,applicantId,applicantName,currentStage,history\n";
-    actFile << "companyName,applicantId,applicantName,sourceStage,destStage\n";
+void saveCSV(vector<Company> &companies) {
+    ofstream cFile("companies.csv");
+    ofstream aFile("applicants.csv");
+    ofstream sFile("actions.csv");
 
     for (int i = 0; i < (int)companies.size(); i++) {
-        compFile << escapeCSV(companies[i].name) << "\n";
-
-        writeQueueToCSV(appFile, companies[i].name, companies[i].screening, "Screening");
-        writeQueueToCSV(appFile, companies[i].name, companies[i].interview, "Interview");
-        writeQueueToCSV(appFile, companies[i].name, companies[i].offer, "Offer");
-        writeQueueToCSV(appFile, companies[i].name, companies[i].held, "Hold");
-        writeQueueToCSV(appFile, companies[i].name, companies[i].rejected, "Rejected");
-
-        writeStackToCSV(actFile, companies[i].name, companies[i].undoStack.top);
+        cFile << companies[i].name << "\n";
+        saveQueueCSV(aFile, companies[i].name, companies[i].screening, "Screening");
+        saveQueueCSV(aFile, companies[i].name, companies[i].interview, "Interview");
+        saveQueueCSV(aFile, companies[i].name, companies[i].offer, "Offer");
+        saveQueueCSV(aFile, companies[i].name, companies[i].held, "Hold");
+        saveQueueCSV(aFile, companies[i].name, companies[i].rejected, "Rejected");
+        saveStackCSV(sFile, companies[i].name, companies[i].undoStack.top);
     }
 
-    compFile.close();
-    appFile.close();
-    actFile.close();
-    cout << "Saved database to companies.csv, applicants.csv, and actions.csv." << endl;
+    cFile.close();
+    aFile.close();
+    sFile.close();
+    cout << "Data saved to CSV files." << endl;
 }
 
-int findCompanyIndexByName(vector<Company> &companies, const string &name) {
+int findCompany(vector<Company> &companies, string name) {
     for (int i = 0; i < (int)companies.size(); i++) {
         if (companies[i].name == name) return i;
     }
     return -1;
 }
 
-void loadDatabaseCSV(vector<Company> &companies) {
-    ifstream compFile("companies.csv");
-    if (!compFile.is_open()) {
-        return;
-    }
+void loadCSV(vector<Company> &companies) {
+    ifstream cFile("companies.csv");
+    if (!cFile.is_open()) return;
 
     companies.clear();
-    string line;
-    bool isHeader = true;
-
-    while (getline(compFile, line)) {
-        if (line.empty()) continue;
-        if (isHeader) { isHeader = false; continue; }
-        vector<string> fields = parseCSVLine(line);
-        if (fields.size() >= 1 && !fields[0].empty()) {
-            companies.push_back(createCompany(fields[0]));
+    string cname;
+    while (getline(cFile, cname)) {
+        if (!cname.empty()) {
+            companies.push_back(createCompany(cname));
         }
     }
-    compFile.close();
+    cFile.close();
 
-    ifstream appFile("applicants.csv");
-    if (appFile.is_open()) {
-        isHeader = true;
-        while (getline(appFile, line)) {
+    ifstream aFile("applicants.csv");
+    if (aFile.is_open()) {
+        string line;
+        while (getline(aFile, line)) {
             if (line.empty()) continue;
-            if (isHeader) { isHeader = false; continue; }
-            vector<string> f = parseCSVLine(line);
-            if (f.size() >= 4) {
-                int cIdx = findCompanyIndexByName(companies, f[0]);
-                if (cIdx != -1) {
-                    int id = stoi(f[1]);
-                    string name = f[2];
-                    string stage = f[3];
-                    string histStr = (f.size() >= 5) ? f[4] : "";
+            stringstream ss(line);
+            string compName, idStr, appName, stage, histStr;
 
-                    Applicant* newApp = new Applicant;
-                    newApp->id = id;
-                    newApp->name = name;
-                    newApp->currentStage = stage;
-                    newApp->next = NULL;
-                    newApp->historyHead = NULL;
+            getline(ss, compName, ',');
+            getline(ss, idStr, ',');
+            getline(ss, appName, ',');
+            getline(ss, stage, ',');
+            getline(ss, histStr);
 
-                    if (!histStr.empty()) {
-                        stringstream ss(histStr);
-                        string ev;
-                        while (getline(ss, ev, '|')) {
-                            if (!ev.empty()) addHistoryEvent(newApp->historyHead, ev);
-                        }
-                    }
+            int idx = findCompany(companies, compName);
+            if (idx != -1) {
+                Applicant* a = new Applicant;
+                a->id = stoi(idStr);
+                a->name = appName;
+                a->currentStage = stage;
+                a->next = NULL;
+                a->historyHead = NULL;
 
-                    if (stage == "Screening") enqueueNode(companies[cIdx].screening, newApp, "Screening");
-                    else if (stage == "Interview") enqueueNode(companies[cIdx].interview, newApp, "Interview");
-                    else if (stage == "Offer") enqueueNode(companies[cIdx].offer, newApp, "Offer");
-                    else if (stage == "Hold") enqueueNode(companies[cIdx].held, newApp, "Hold");
-                    else if (stage == "Rejected") enqueueNode(companies[cIdx].rejected, newApp, "Rejected");
-                    else enqueueNode(companies[cIdx].screening, newApp, "Screening");
+                stringstream hss(histStr);
+                string ev;
+                while (getline(hss, ev, '|')) {
+                    if (!ev.empty()) addHistoryEvent(a->historyHead, ev);
                 }
+
+                if (stage == "Screening") enqueueNode(companies[idx].screening, a, "Screening");
+                else if (stage == "Interview") enqueueNode(companies[idx].interview, a, "Interview");
+                else if (stage == "Offer") enqueueNode(companies[idx].offer, a, "Offer");
+                else if (stage == "Hold") enqueueNode(companies[idx].held, a, "Hold");
+                else if (stage == "Rejected") enqueueNode(companies[idx].rejected, a, "Rejected");
             }
         }
-        appFile.close();
+        aFile.close();
     }
 
-    ifstream actFile("actions.csv");
-    if (actFile.is_open()) {
-        isHeader = true;
-        while (getline(actFile, line)) {
+    ifstream sFile("actions.csv");
+    if (sFile.is_open()) {
+        string line;
+        while (getline(sFile, line)) {
             if (line.empty()) continue;
-            if (isHeader) { isHeader = false; continue; }
-            vector<string> f = parseCSVLine(line);
-            if (f.size() >= 5) {
-                int cIdx = findCompanyIndexByName(companies, f[0]);
-                if (cIdx != -1) {
-                    int id = stoi(f[1]);
-                    push(companies[cIdx].undoStack, id, f[2], f[3], f[4]);
-                }
+            stringstream ss(line);
+            string compName, idStr, appName, src, dst;
+
+            getline(ss, compName, ',');
+            getline(ss, idStr, ',');
+            getline(ss, appName, ',');
+            getline(ss, src, ',');
+            getline(ss, dst);
+
+            int idx = findCompany(companies, compName);
+            if (idx != -1) {
+                push(companies[idx].undoStack, stoi(idStr), appName, src, dst);
             }
         }
-        actFile.close();
+        sFile.close();
     }
 
-    if (!companies.empty()) {
-        cout << "Loaded database from CSV files." << endl;
-    }
+    cout << "Data loaded from CSV files." << endl;
 }
 
 #endif
