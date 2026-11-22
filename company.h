@@ -12,7 +12,8 @@ struct Company {
     Queue interview;
     Queue offer;
     Queue held;       
-    Queue rejected;   
+    Queue rejected;
+    ActionStack undoStack;
 };
 
 Company createCompany(string name) {
@@ -26,17 +27,25 @@ Company createCompany(string name) {
     return c;
 }
 
-
 string toLower(string s) {
-    for (int i = 0; i < s.length(); i++) {
+    for (int i = 0; i < (int)s.length(); i++) {
         s[i] = tolower(s[i]);
     }
     return s;
 }
 
-
 void addApplicant(Company &c, int id, string name) {
-    enqueue(c.screening, id, name);
+    Applicant* newApp = new Applicant;
+    newApp->id = id;
+    newApp->name = name;
+    newApp->currentStage = "Screening";
+    newApp->next = NULL;
+    newApp->historyHead = NULL;
+
+    addHistoryEvent(newApp->historyHead, "Applied");
+    addHistoryEvent(newApp->historyHead, "Screening");
+    enqueueNode(c.screening, newApp, "Screening");
+    push(c.undoStack, id, name, "None", "Screening");
     cout << name << " added to " << c.name << "'s Screening queue." << endl;
 }
 
@@ -44,28 +53,25 @@ void advanceApplicant(Company &c, int id) {
     Applicant* a = removeById(c.screening, id);
     if (a != NULL) {
         addHistoryEvent(a->historyHead, "Interview");
-        push(id, a->name, "Screening", "Interview");
+        push(c.undoStack, id, a->name, "Screening", "Interview");
         a->currentStage = "Interview";
-        enqueue(c.interview, id, a->name);
+        enqueueNode(c.interview, a, "Interview");
         cout << a->name << " moved to Interview." << endl;
-        delete a;
         return;
     }
 
     a = removeById(c.interview, id);
     if (a != NULL) {
         addHistoryEvent(a->historyHead, "Offer");
-        push(id, a->name, "Interview", "Offer");
+        push(c.undoStack, id, a->name, "Interview", "Offer");
         a->currentStage = "Offer";
-        enqueue(c.offer, id, a->name);
+        enqueueNode(c.offer, a, "Offer");
         cout << a->name << " moved to Offer." << endl;
-        delete a;
         return;
     }
 
     cout << "Applicant not found in Screening or Interview." << endl;
 }
-
 
 Applicant* findAndRemoveFromCurrentStage(Company &c, int id, string &foundStage) {
     Applicant* a;
@@ -80,12 +86,36 @@ Applicant* findAndRemoveFromCurrentStage(Company &c, int id, string &foundStage)
     if (a != NULL) { foundStage = "Offer"; return a; }
 
     a = removeById(c.held, id);
-    if (a != NULL) { foundStage = "Held"; return a; }
+    if (a != NULL) { foundStage = "Hold"; return a; }
+
+    a = removeById(c.rejected, id);
+    if (a != NULL) { foundStage = "Rejected"; return a; }
 
     foundStage = "";
     return NULL;
 }
 
+Applicant* findApplicantInCompany(Company &c, int id, string &foundStage) {
+    Applicant* a;
+
+    a = findById(c.screening, id);
+    if (a != NULL) { foundStage = "Screening"; return a; }
+
+    a = findById(c.interview, id);
+    if (a != NULL) { foundStage = "Interview"; return a; }
+
+    a = findById(c.offer, id);
+    if (a != NULL) { foundStage = "Offer"; return a; }
+
+    a = findById(c.held, id);
+    if (a != NULL) { foundStage = "Hold"; return a; }
+
+    a = findById(c.rejected, id);
+    if (a != NULL) { foundStage = "Rejected"; return a; }
+
+    foundStage = "";
+    return NULL;
+}
 
 void holdApplicant(Company &c, int id) {
     string sourceStage;
@@ -97,13 +127,11 @@ void holdApplicant(Company &c, int id) {
     }
 
     addHistoryEvent(a->historyHead, "Hold");
-    push(id, a->name, sourceStage, "Hold");
+    push(c.undoStack, id, a->name, sourceStage, "Hold");
     a->currentStage = "Hold";
-    enqueue(c.held, id, a->name);
+    enqueueNode(c.held, a, "Hold");
     cout << a->name << " moved to Hold (was in " << sourceStage << ")." << endl;
-    delete a;
 }
-
 
 void rejectApplicant(Company &c, int id) {
     string sourceStage;
@@ -115,15 +143,13 @@ void rejectApplicant(Company &c, int id) {
     }
 
     addHistoryEvent(a->historyHead, "Rejected");
-    push(id, a->name, sourceStage, "Rejected");
+    push(c.undoStack, id, a->name, sourceStage, "Rejected");
     a->currentStage = "Rejected";
-    enqueue(c.rejected, id, a->name);
+    enqueueNode(c.rejected, a, "Rejected");
     cout << a->name << " has been Rejected (was in " << sourceStage << ")." << endl;
-    delete a;
 }
 
 // Reconsider a held/rejected applicant back into a specific stage
-
 void reconsiderApplicant(Company &c, int id, string targetStage) {
     string sourceStage;
     Applicant* a = findAndRemoveFromCurrentStage(c, id, sourceStage);
@@ -134,24 +160,26 @@ void reconsiderApplicant(Company &c, int id, string targetStage) {
     }
 
     string targetLower = toLower(targetStage);
-
-    addHistoryEvent(a->historyHead, targetStage);
-    push(id, a->name, sourceStage, targetStage);
-    a->currentStage = targetStage;
+    string finalStage = "";
 
     if (targetLower == "screening") {
-        enqueue(c.screening, id, a->name);
+        finalStage = "Screening";
+        addHistoryEvent(a->historyHead, finalStage);
+        push(c.undoStack, id, a->name, sourceStage, finalStage);
+        enqueueNode(c.screening, a, finalStage);
     } else if (targetLower == "interview") {
-        enqueue(c.interview, id, a->name);
+        finalStage = "Interview";
+        addHistoryEvent(a->historyHead, finalStage);
+        push(c.undoStack, id, a->name, sourceStage, finalStage);
+        enqueueNode(c.interview, a, finalStage);
     } else {
         cout << "Invalid target stage." << endl;
-        delete a;
+        enqueueNode(c.held, a, sourceStage);
         return;
     }
 
-    cout << a->name << " reconsidered into " << targetStage 
+    cout << a->name << " reconsidered into " << finalStage 
          << " (was in " << sourceStage << ")." << endl;
-    delete a;
 }
 
 void displayCompany(Company &c) {
@@ -162,6 +190,5 @@ void displayCompany(Company &c) {
     cout << "Held: ";      display(c.held);
     cout << "Rejected: ";  display(c.rejected);
 }
-
 
 #endif
