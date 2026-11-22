@@ -1,7 +1,9 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <iostream>
 #include "applicant.h"
+using namespace std;
 
 struct Action {
     int applicantId;
@@ -11,38 +13,37 @@ struct Action {
     Action* next;  
 };
 
-Action* top = NULL;
+struct ActionStack {
+    Action* top = NULL;
+};
 
-void push(int id, string name, string source, string dest) {
+void push(ActionStack &s, int id, string name, string source, string dest) {
     Action* newAction = new Action;
     newAction->applicantId = id;
     newAction->applicantName = name;
     newAction->sourceStage = source;
     newAction->destStage = dest;
-    newAction->next = top;    
-    top = newAction;          
+    newAction->next = s.top;    
+    s.top = newAction;          
 }
 
-
-Action* pop() {
-    if (top == NULL) {
+Action* pop(ActionStack &s) {
+    if (s.top == NULL) {
         cout << "No actions to undo!" << endl;
         return NULL;
     }
-    Action* temp = top;
-    top = top->next;
+    Action* temp = s.top;
+    s.top = s.top->next;
     temp->next = NULL;
     return temp;
 }
 
-
-bool isStackEmpty() {
-    return top == NULL;
+bool isStackEmpty(ActionStack &s) {
+    return s.top == NULL;
 }
 
-
-void displayActions() {
-    Action* temp = top;
+void displayActions(ActionStack &s) {
+    Action* temp = s.top;
     if (temp == NULL) {
         cout << "No actions recorded." << endl;
         return;
