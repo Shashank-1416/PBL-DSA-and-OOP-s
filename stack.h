@@ -2,7 +2,6 @@
 #define STACK_H
 
 #include <iostream>
-#include "applicant.h"
 using namespace std;
 
 struct Action {
@@ -14,8 +13,14 @@ struct Action {
 };
 
 struct ActionStack {
-    Action* top = NULL;
+    Action* top;
 };
+
+ActionStack createStack() {
+    ActionStack s;
+    s.top = NULL;
+    return s;
+}
 
 void push(ActionStack &s, int id, string name, string source, string dest) {
     Action* newAction = new Action;
@@ -36,26 +41,6 @@ Action* pop(ActionStack &s) {
     s.top = s.top->next;
     temp->next = NULL;
     return temp;
-}
-
-bool isStackEmpty(ActionStack &s) {
-    return s.top == NULL;
-}
-
-void displayActions(ActionStack &s) {
-    Action* temp = s.top;
-    if (temp == NULL) {
-        cout << "No actions recorded." << endl;
-        return;
-    }
-    cout << "Action Stack (top to bottom):" << endl;
-    int num = 1;
-    while (temp != NULL) {
-        cout << num << ". " << temp->applicantName << ": " 
-             << temp->sourceStage << " -> " << temp->destStage << endl;
-        temp = temp->next;
-        num++;
-    }
 }
 
 #endif
